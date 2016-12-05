@@ -101,6 +101,6 @@ public class AppUtil {
         ep.setBackground(label.getBackground());
 
         // show
-        JOptionPane.showMessageDialog(comp, ep);
+        JOptionPane.showMessageDialog(comp, ep,AppConfig.APP_SHORT_TITLE,1);
     }
 }
