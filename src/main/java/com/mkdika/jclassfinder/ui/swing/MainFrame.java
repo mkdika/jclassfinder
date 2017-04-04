@@ -1,10 +1,16 @@
 package com.mkdika.jclassfinder.ui.swing;
 
+import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
+import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
+import com.jgoodies.looks.plastic.theme.ExperienceBlue;
 import com.mkdika.jclassfinder.config.AppConfig;
 import com.mkdika.jclassfinder.helper.AppUtil;
 import com.mkdika.jclassfinder.helper.filefilter.GenericExtFilter;
 import com.mkdika.jclassfinder.helper.filefilter.JarExtFilter;
 import com.mkdika.jclassfinder.model.ClassModel;
+import java.awt.Desktop;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,6 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -44,6 +52,7 @@ public class MainFrame extends javax.swing.JFrame {
      */
     public MainFrame() {
         initComponents();
+        initListContextMenu();
         setLocationRelativeTo(null);
         setTitle(AppConfig.APP_TITLE + " v" + AppConfig.APP_VERSION);
 
@@ -52,6 +61,52 @@ public class MainFrame extends javax.swing.JFrame {
         jarListModel = new DefaultListModel();
         classListModel = new DefaultListModel();
         classListIndex = new ArrayList<>();
+    }
+
+    private void initListContextMenu() {
+
+        final JPopupMenu popupMenu = new JPopupMenu();
+        JMenuItem openFolder = new JMenuItem("Open Containing Folder");
+        openFolder.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                File f = (File) (Object) listJarFile.getSelectedValue();
+                openFolderToExplorer(f.getParent());
+            }
+        });
+        popupMenu.add(openFolder);
+        listJarFile.setComponentPopupMenu(popupMenu);
+
+        final JPopupMenu popupMenu2 = new JPopupMenu();
+        JMenuItem openFolder2 = new JMenuItem("Open Containing Folder");
+        openFolder2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String tmp[] = listClass.getSelectedValue().split(":");
+                File f = new File(tmp[0].trim());
+                openFolderToExplorer(f.getParent());
+            }
+        });
+        popupMenu2.add(openFolder2);
+        listClass.setComponentPopupMenu(popupMenu2);
+    }
+
+    private void openFolderToExplorer(String path) {
+        try {
+            File f = new File(path);
+            if (path.trim().isEmpty()) {
+                AppUtil.msg(this, "Folder Path is empty.");
+            } else if (!f.exists()) {
+                AppUtil.msg(this, "Folder does not exists.");
+            } else {
+                Desktop.getDesktop().open(f);
+            }
+
+        } catch (IOException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+            AppUtil.msg(this, ex.getLocalizedMessage());
+        }
     }
 
     /**
@@ -63,11 +118,11 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jInternalFrame1 = new javax.swing.JInternalFrame();
         jPanel1 = new javax.swing.JPanel();
         txtLocation = new javax.swing.JTextField();
         btnBrowseLocation = new javax.swing.JButton();
         chkInclude = new javax.swing.JCheckBox();
+        btnOpenFolder = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         pbmain = new javax.swing.JProgressBar();
         jLabel2 = new javax.swing.JLabel();
@@ -82,19 +137,6 @@ public class MainFrame extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         txtSearch = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
-
-        jInternalFrame1.setVisible(true);
-
-        javax.swing.GroupLayout jInternalFrame1Layout = new javax.swing.GroupLayout(jInternalFrame1.getContentPane());
-        jInternalFrame1.getContentPane().setLayout(jInternalFrame1Layout);
-        jInternalFrame1Layout.setHorizontalGroup(
-            jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jInternalFrame1Layout.setVerticalGroup(
-            jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -133,6 +175,15 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        btnOpenFolder.setFont(new java.awt.Font("Dialog", 0, 11)); // NOI18N
+        btnOpenFolder.setText("Open Folder");
+        btnOpenFolder.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        btnOpenFolder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOpenFolderActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -142,11 +193,11 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(chkInclude)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(txtLocation)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnBrowseLocation)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnOpenFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtLocation))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnBrowseLocation)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -156,13 +207,16 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(txtLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnBrowseLocation))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(chkInclude)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(chkInclude)
+                    .addComponent(btnOpenFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         pbmain.setFont(new java.awt.Font("Dialog", 0, 11)); // NOI18N
+        pbmain.setForeground(new java.awt.Color(0, 0, 255));
 
         jLabel2.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(0, 0, 255));
@@ -209,7 +263,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         jPanel3Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {lblTotClass, lblTotJar});
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "JAR File : Class", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11))); // NOI18N
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "<html>JAR File : Class <i>(right click to show context menu)</i></html>", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11))); // NOI18N
 
         listClass.setFont(new java.awt.Font("Dialog", 0, 11)); // NOI18N
         jScrollPane1.setViewportView(listClass);
@@ -222,10 +276,10 @@ public class MainFrame extends javax.swing.JFrame {
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
         );
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "JAR Files", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11))); // NOI18N
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "<html>JAR Files <i>(right click to show context menu)</i></html>", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11))); // NOI18N
 
         listJarFile.setFont(new java.awt.Font("Dialog", 0, 11)); // NOI18N
         jScrollPane2.setViewportView(listJarFile);
@@ -238,7 +292,7 @@ public class MainFrame extends javax.swing.JFrame {
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Search Java Class (Can be wildcard search)", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11))); // NOI18N
@@ -293,7 +347,7 @@ public class MainFrame extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(1, 1, 1)
@@ -348,21 +402,34 @@ public class MainFrame extends javax.swing.JFrame {
         loadSearchWorker.execute();
     }//GEN-LAST:event_btnSearchActionPerformed
 
+    private void btnOpenFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenFolderActionPerformed
+        openFolderToExplorer(txtLocation.getText().trim());
+    }//GEN-LAST:event_btnOpenFolderActionPerformed
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {        
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                    new MainFrame().setVisible(true);
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
-                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+    public static void main(String args[]) {
+        try {
+            Plastic3DLookAndFeel lnf = new PlasticXPLookAndFeel();
+            Plastic3DLookAndFeel.setCurrentTheme(new ExperienceBlue());
+            com.jgoodies.looks.Options.setPopupDropShadowEnabled(true);
+            UIManager.setLookAndFeel(lnf);
+
+            /* Create and display the form */
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                        new MainFrame().setVisible(true);
+                    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+                        Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
-            }
-        });
+            });
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void rearrangeViewList(boolean selected) {
@@ -405,7 +472,7 @@ public class MainFrame extends javax.swing.JFrame {
             pbmain.setStringPainted(true);
             pbmain.setString("Load JAR File");
             pbmain.setIndeterminate(true);
-            loadJarFilesList(txtLocation.getText(),chkInclude.isSelected());
+            loadJarFilesList(txtLocation.getText(), chkInclude.isSelected());
             if (listFile.size() > 0) {
                 int c = 0;
                 totalClass = 0;
@@ -473,7 +540,7 @@ public class MainFrame extends javax.swing.JFrame {
             pbmain.setStringPainted(true);
             pbmain.setString("Searching class");
             pbmain.setIndeterminate(true);
-            searchClass(txtSearch.getText().trim());
+            searchClass(txtSearch.getText().trim().replace("/", "."));
             return true;
         }
     }
@@ -486,6 +553,7 @@ public class MainFrame extends javax.swing.JFrame {
         btnSearch.setEnabled(b);
         listJarFile.setEnabled(b);
         listClass.setEnabled(b);
+        btnOpenFolder.setEnabled(b);
     }
 
     private void browseFolder() {
@@ -595,9 +663,9 @@ public class MainFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBrowseLocation;
+    private javax.swing.JButton btnOpenFolder;
     private javax.swing.JButton btnSearch;
     private javax.swing.JCheckBox chkInclude;
-    private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
